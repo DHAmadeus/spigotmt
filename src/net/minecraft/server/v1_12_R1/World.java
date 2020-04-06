@@ -180,7 +180,7 @@ public abstract class World implements IBlockAccess {
 		// ~
 		this.players = Collections.synchronizedList(Lists.newArrayList());
 		this.j = Lists.newArrayList();
-		this.entitiesById = (IntHashMap<Entity>) new IntHashMap();
+		this.entitiesById = (IntHashMap<Entity>) new IntHashMap<Entity>();
 		this.l = new Random().nextInt();
 		this.random = new Random();
 		this.t = new NavigationListener();
@@ -226,7 +226,7 @@ public abstract class World implements IBlockAccess {
 			public void a(WorldBorder worldborder, double d0) {
 				World.this.getServer().getHandle()
 						.sendAll(
-								(Packet) new PacketPlayOutWorldBorder(worldborder,
+								(Packet<?>) new PacketPlayOutWorldBorder(worldborder,
 										PacketPlayOutWorldBorder.EnumWorldBorderAction.SET_SIZE),
 								(World) worldborder.world);
 			}
@@ -234,7 +234,7 @@ public abstract class World implements IBlockAccess {
 			public void a(WorldBorder worldborder, double d0, double d1, long i) {
 				World.this.getServer().getHandle()
 						.sendAll(
-								(Packet) new PacketPlayOutWorldBorder(worldborder,
+								(Packet<?>) new PacketPlayOutWorldBorder(worldborder,
 										PacketPlayOutWorldBorder.EnumWorldBorderAction.LERP_SIZE),
 								(World) worldborder.world);
 			}
@@ -242,21 +242,21 @@ public abstract class World implements IBlockAccess {
 			public void a(WorldBorder worldborder, double d0, double d1) {
 				World.this.getServer().getHandle()
 						.sendAll(
-								(Packet) new PacketPlayOutWorldBorder(worldborder,
+								(Packet<?>) new PacketPlayOutWorldBorder(worldborder,
 										PacketPlayOutWorldBorder.EnumWorldBorderAction.SET_CENTER),
 								(World) worldborder.world);
 			}
 
 			public void a(WorldBorder worldborder, int i) {
 				World.this.getServer().getHandle().sendAll(
-						(Packet) new PacketPlayOutWorldBorder(worldborder,
+						(Packet<?>) new PacketPlayOutWorldBorder(worldborder,
 								PacketPlayOutWorldBorder.EnumWorldBorderAction.SET_WARNING_TIME),
 						(World) worldborder.world);
 			}
 
 			public void b(WorldBorder worldborder, int i) {
 				World.this.getServer().getHandle().sendAll(
-						(Packet) new PacketPlayOutWorldBorder(worldborder,
+						(Packet<?>) new PacketPlayOutWorldBorder(worldborder,
 								PacketPlayOutWorldBorder.EnumWorldBorderAction.SET_WARNING_BLOCKS),
 						(World) worldborder.world);
 			}
@@ -286,7 +286,7 @@ public abstract class World implements IBlockAccess {
 			} catch (Throwable throwable) {
 				CrashReport crashreport = CrashReport.a(throwable, "Getting biome");
 				CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Coordinates of biome request");
-				crashreportsystemdetails.a("Location", (CrashReportCallable) new CrashReportCallable() {
+				crashreportsystemdetails.a("Location", new CrashReportCallable<Object>() {
 					public String a() throws Exception {
 						return CrashReportSystemDetails.a(blockposition);
 					}
@@ -601,7 +601,7 @@ public abstract class World implements IBlockAccess {
 			} catch (Throwable throwable) {
 				CrashReport crashreport = CrashReport.a(throwable, "Exception while updating neighbours");
 				CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Block being updated");
-				crashreportsystemdetails.a("Source block type", (CrashReportCallable) new CrashReportCallable() {
+				crashreportsystemdetails.a("Source block type", new CrashReportCallable<Object>() {
 					public String a() throws Exception {
 						try {
 							return String.format("ID #%d (%s // %s)", Block.getId(block), block.a(),
@@ -630,7 +630,7 @@ public abstract class World implements IBlockAccess {
 				} catch (Throwable throwable) {
 					CrashReport crashreport = CrashReport.a(throwable, "Exception while updating neighbours");
 					CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Block being updated");
-					crashreportsystemdetails.a("Source block type", (CrashReportCallable) new CrashReportCallable() {
+					crashreportsystemdetails.a("Source block type", new CrashReportCallable<Object>() {
 						public String a() throws Exception {
 							try {
 								return String.format("ID #%d (%s // %s)", Block.getId(block), block.a(),
@@ -1259,7 +1259,7 @@ public abstract class World implements IBlockAccess {
 									iblockdata2 = this.getType((BlockPosition) blockposition_pooledblockposition);
 								}
 								iblockdata2.a(this, (BlockPosition) blockposition_pooledblockposition, axisalignedbb,
-										(List) list, entity, false);
+										(List<AxisAlignedBB>) list, entity, false);
 								if (flag && !list.isEmpty()) {
 									boolean flag7 = true;
 									return flag7;
@@ -1276,13 +1276,13 @@ public abstract class World implements IBlockAccess {
 	}
 
 	public List<AxisAlignedBB> getCubes(@Nullable Entity entity, AxisAlignedBB axisalignedbb) {
-		ArrayList arraylist = Lists.newArrayList();
+		ArrayList<AxisAlignedBB> arraylist = Lists.newArrayList();
 		this.a(entity, axisalignedbb, false, arraylist);
 		if (entity != null) {
 			if (entity instanceof EntityArmorStand && !entity.world.paperConfig.armorStandEntityLookups) {
 				return (List<AxisAlignedBB>) arraylist;
 			}
-			List list = this.getEntities(entity, axisalignedbb.g(0.25));
+			List<?> list = this.getEntities(entity, axisalignedbb.g(0.25));
 			for (int i = 0; i < list.size(); ++i) {
 				Entity entity2 = (Entity) list.get(i);
 				if (!entity.x(entity2)) {
@@ -1504,8 +1504,8 @@ public abstract class World implements IBlockAccess {
 						}
 						if (shouldTick && this.P.a(blockposition)) {
 							try {
-								this.methodProfiler
-										.a(() -> String.valueOf(TileEntity.a((Class) tileentity.getClass())));
+								this.methodProfiler.a(() -> String
+										.valueOf(TileEntity.a((Class<? extends TileEntity>) tileentity.getClass())));
 								tileentity.tickTimer.startTiming();
 								((ITickable) tileentity).e();
 								this.methodProfiler.b();
@@ -1657,7 +1657,7 @@ public abstract class World implements IBlockAccess {
 	}
 
 	public boolean checkNoVisiblePlayerCollisions(AxisAlignedBB axisalignedbb, @Nullable Entity entity) {
-		List list = this.getEntities(null, axisalignedbb);
+		List<?> list = this.getEntities(null, axisalignedbb);
 		for (int i = 0; i < list.size(); ++i) {
 			Entity entity2 = (Entity) list.get(i);
 			if (!(entity instanceof EntityPlayer) || !(entity2 instanceof EntityPlayer) || ((EntityPlayer) entity)
@@ -1671,7 +1671,7 @@ public abstract class World implements IBlockAccess {
 	}
 
 	public boolean a(AxisAlignedBB axisalignedbb, @Nullable Entity entity) {
-		List list = this.getEntities(null, axisalignedbb);
+		List<?> list = this.getEntities(null, axisalignedbb);
 		for (int i = 0; i < list.size(); ++i) {
 			Entity entity2 = (Entity) list.get(i);
 			if (!entity2.dead && entity2.i && entity2 != entity && (entity == null || entity2.x(entity))) {
@@ -1775,7 +1775,7 @@ public abstract class World implements IBlockAccess {
 					IBlockData iblockdata = this.getType((BlockPosition) blockposition_pooledblockposition);
 					Block block = iblockdata.getBlock();
 					if (iblockdata.getMaterial() == material) {
-						double d0 = l2 + 1 - BlockFluids.b((int) iblockdata.get((IBlockState) BlockFluids.LEVEL));
+						double d0 = l2 + 1 - BlockFluids.b((int) iblockdata.get((IBlockState<?>) BlockFluids.LEVEL));
 						if (l >= d0) {
 							flag = true;
 							vec3d = block.a(this, (BlockPosition) blockposition_pooledblockposition, entity, vec3d);
@@ -1911,7 +1911,7 @@ public abstract class World implements IBlockAccess {
 			}
 			if (this.O) {
 				tileentity.setPosition(blockposition);
-				Iterator iterator = this.b.iterator();
+				Iterator<TileEntity> iterator = this.b.iterator();
 				while (iterator.hasNext()) {
 					TileEntity tileentity2 = (TileEntity) iterator.next();
 					if (tileentity2.getPosition().equals((Object) blockposition)) {
@@ -2078,7 +2078,7 @@ public abstract class World implements IBlockAccess {
 			IBlockData iblockdata = this.getType(blockposition);
 			Block block = iblockdata.getBlock();
 			if ((block == Blocks.WATER || block == Blocks.FLOWING_WATER)
-					&& (int) iblockdata.get((IBlockState) BlockFluids.LEVEL) == 0) {
+					&& (int) iblockdata.get((IBlockState<?>) BlockFluids.LEVEL) == 0) {
 				if (!flag) {
 					return true;
 				}
@@ -2283,7 +2283,7 @@ public abstract class World implements IBlockAccess {
 
 	public List<Entity> getEntities(@Nullable Entity entity, AxisAlignedBB axisalignedbb,
 			@Nullable Predicate<? super Entity> predicate) {
-		ArrayList arraylist = Lists.newArrayList();
+		ArrayList<Entity> arraylist = Lists.newArrayList();
 		int i = MathHelper.floor((axisalignedbb.a - 2.0) / 16.0);
 		int j = MathHelper.floor((axisalignedbb.d + 2.0) / 16.0);
 		int k = MathHelper.floor((axisalignedbb.c - 2.0) / 16.0);
@@ -2291,7 +2291,7 @@ public abstract class World implements IBlockAccess {
 		for (int i2 = i; i2 <= j; ++i2) {
 			for (int j2 = k; j2 <= l; ++j2) {
 				if (this.isChunkLoaded(i2, j2, true)) {
-					this.getChunkAt(i2, j2).a(entity, axisalignedbb, (List) arraylist, (Predicate) predicate);
+					this.getChunkAt(i2, j2).a(entity, axisalignedbb, arraylist, predicate);
 				}
 			}
 		}
@@ -2299,7 +2299,7 @@ public abstract class World implements IBlockAccess {
 	}
 
 	public <T extends Entity> List<T> a(Class<? extends T> oclass, Predicate<? super T> predicate) {
-		ArrayList arraylist = Lists.newArrayList();
+		ArrayList<T> arraylist = Lists.newArrayList();
 		synchronized (entityList) {
 			for (Entity entity : this.entityList) {
 				if (entity.shouldBeRemoved) {
@@ -2308,22 +2308,22 @@ public abstract class World implements IBlockAccess {
 				if (!oclass.isAssignableFrom(entity.getClass()) || !predicate.apply((T) entity)) {
 					continue;
 				}
-				arraylist.add(entity);
+				arraylist.add((T) entity);
 			}
 		}
-		return (List<T>) arraylist;
+		return arraylist;
 	}
 
 	public <T extends Entity> List<T> b(Class<? extends T> oclass, Predicate<? super T> predicate) {
-		ArrayList arraylist = Lists.newArrayList();
+		ArrayList<T> arraylist = Lists.newArrayList();
 		synchronized (players) {
 			for (Entity entity : this.players) {
 				if (oclass.isAssignableFrom(entity.getClass()) && predicate.apply((T) entity)) {
-					arraylist.add(entity);
+					arraylist.add((T) entity);
 				}
 			}
 		}
-		return (List<T>) arraylist;
+		return arraylist;
 	}
 
 	public <T extends Entity> List<T> a(Class<? extends T> oclass, AxisAlignedBB axisalignedbb) {
@@ -2336,11 +2336,12 @@ public abstract class World implements IBlockAccess {
 		int j = MathHelper.f((axisalignedbb.d + 2.0) / 16.0);
 		int k = MathHelper.floor((axisalignedbb.c - 2.0) / 16.0);
 		int l = MathHelper.f((axisalignedbb.f + 2.0) / 16.0);
-		ArrayList arraylist = Lists.newArrayList();
+		ArrayList<T> arraylist = Lists.newArrayList();
 		for (int i2 = i; i2 < j; ++i2) {
 			for (int j2 = k; j2 < l; ++j2) {
 				if (this.isChunkLoaded(i2, j2, true)) {
-					this.getChunkAt(i2, j2).a((Class) oclass, axisalignedbb, (List) arraylist, (Predicate) predicate);
+					this.getChunkAt(i2, j2).a((Class<? extends T>) oclass, axisalignedbb, (List<T>) arraylist,
+							(Predicate<? super T>) predicate);
 				}
 			}
 		}
@@ -2349,7 +2350,7 @@ public abstract class World implements IBlockAccess {
 
 	@Nullable
 	public <T extends Entity> T a(Class<? extends T> oclass, AxisAlignedBB axisalignedbb, T t0) {
-		List list = this.a((Class<? extends Entity>) oclass, axisalignedbb);
+		List<?> list = this.a((Class<? extends Entity>) oclass, axisalignedbb);
 		Entity entity = null;
 		double d0 = Double.MAX_VALUE;
 		for (int i = 0; i < list.size(); ++i) {
@@ -2520,7 +2521,7 @@ public abstract class World implements IBlockAccess {
 
 	@Nullable
 	public EntityHuman a(double d0, double d1, double d2, double d3, boolean flag) {
-		Predicate predicate = flag ? IEntitySelector.d : IEntitySelector.e;
+		Predicate<Entity> predicate = flag ? IEntitySelector.d : IEntitySelector.e;
 		return this.a(d0, d1, d2, d3, (Predicate<Entity>) predicate);
 	}
 
@@ -2740,7 +2741,7 @@ public abstract class World implements IBlockAccess {
 
 	@Nullable
 	public PersistentBase a(Class<? extends PersistentBase> oclass, String s) {
-		return this.worldMaps.get((Class) oclass, s);
+		return this.worldMaps.get((Class<? extends PersistentBase>) oclass, s);
 	}
 
 	public int b(String s) {
@@ -2791,7 +2792,7 @@ public abstract class World implements IBlockAccess {
 		CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Affected level", 1);
 		crashreportsystemdetails.a("Level name",
 				(Object) ((this.worldData == null) ? "????" : this.worldData.getName()));
-		crashreportsystemdetails.a("All players", (CrashReportCallable) new CrashReportCallable() {
+		crashreportsystemdetails.a("All players", new CrashReportCallable<Object>() {
 			public String a() {
 				return World.this.players.size() + " total; " + World.this.players;
 			}
@@ -2800,7 +2801,7 @@ public abstract class World implements IBlockAccess {
 				return this.a();
 			}
 		});
-		crashreportsystemdetails.a("Chunk stats", (CrashReportCallable) new CrashReportCallable() {
+		crashreportsystemdetails.a("Chunk stats", new CrashReportCallable<Object>() {
 			public String a() {
 				return World.this.chunkProvider.getName();
 			}
