@@ -140,9 +140,11 @@ public class PlayerChunk {
 
 	public void sendChunk(EntityPlayer entityplayer) {
 		if (this.done) {
-			this.chunk.world.chunkPacketBlockController.onChunkPacketCreate(this.chunk, 65535, true);
-			entityplayer.playerConnection.sendPacket((Packet<?>) new PacketPlayOutMapChunk(this.chunk, 65535));
-			this.playerChunkMap.getWorld().getTracker().a(entityplayer, this.chunk);
+			new Thread(() -> {
+				this.chunk.world.chunkPacketBlockController.onChunkPacketCreate(this.chunk, 65535, true);
+				entityplayer.playerConnection.sendPacket((Packet<?>) new PacketPlayOutMapChunk(this.chunk, 65535));
+				this.playerChunkMap.getWorld().getTracker().a(entityplayer, this.chunk);
+			}, "sending chunk");
 		}
 	}
 

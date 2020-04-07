@@ -1223,7 +1223,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
 		} else {
 			super.G();
 		}
-		this.x().getTracker().a(this);
+		new Thread(() -> x().getTracker().a(this), "G tracker").start();
 	}
 
 	public Entity getSpecatorTarget() {

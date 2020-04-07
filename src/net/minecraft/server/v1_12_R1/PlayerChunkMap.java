@@ -12,6 +12,8 @@ import org.spigotmc.SlackActivityAccountant;
 import co.aikar.timings.Timing;
 import java.util.Collections;
 import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.ImmutableList;
+
 import java.util.Comparator;
 import com.google.common.collect.AbstractIterator;
 import java.util.Iterator;
@@ -60,13 +62,13 @@ public class PlayerChunkMap {
 		return this.world;
 	}
 
-	public List<PlayerChunk> làm_sao_để_em_hiểu_lòng_anh() {
-		return i;
-	}
+//	public List<PlayerChunk> làm_sao_để_em_hiểu_lòng_anh() {
+//		return i;
+//	}
 
 	public Iterator<Chunk> b() {
 //		synchronized (i) {
-		final Iterator<PlayerChunk> iterator = this.i.iterator();
+		final Iterator<PlayerChunk> iterator = ImmutableList.copyOf(i).iterator();
 		return new AbstractIterator<Chunk>() {
 			protected Chunk a() {
 				while (iterator.hasNext()) {
@@ -285,7 +287,13 @@ public class PlayerChunkMap {
 		return j2 >= -i1 && j2 <= i1 && (k2 >= -i1 && k2 <= i1);
 	}
 
-	public void movePlayer(final EntityPlayer entityplayer) {
+	public void movePlayerzz(EntityPlayer entityplayer) {
+		new Thread(() -> {
+//			movePlayerMT(entityplayer);
+		}, "player movement");
+	}
+
+	public void movePlayer(EntityPlayer entityplayer) {
 		final int i = (int) entityplayer.locX >> 4;
 		final int j = (int) entityplayer.locZ >> 4;
 		final double d0 = entityplayer.d - entityplayer.locX;
