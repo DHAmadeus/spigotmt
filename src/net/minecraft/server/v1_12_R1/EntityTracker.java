@@ -14,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 import org.spigotmc.AsyncCatcher;
 import org.spigotmc.TrackingRange;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 public class EntityTracker {
@@ -190,9 +191,9 @@ public class EntityTracker {
 		world.timings.tracker1.stopTiming();
 	}
 
-	public synchronized void lonmemay() {
+	public /* synchronized */ void lonmemay() {
 		List<EntityPlayer> cac = new ArrayList<EntityPlayer>();
-		c.forEach(entitytrackerentry -> {
+		ImmutableSet.copyOf(c).forEach(entitytrackerentry -> {
 			entitytrackerentry.track(world.players);
 			if (entitytrackerentry.b) {
 				Entity entity = entitytrackerentry.b();
@@ -203,9 +204,9 @@ public class EntityTracker {
 		cac.forEach(mojangngu -> c.forEach(nhuconcho -> nhuconcho.updatePlayer(mojangngu)));
 	}
 
-	public synchronized void a(EntityPlayer entityplayer) {
+	public /* synchronized */ void a(EntityPlayer entityplayer) {
 		// synchronized (c) {
-		for (EntityTrackerEntry entitytrackerentry : c) {
+		for (EntityTrackerEntry entitytrackerentry : ImmutableSet.copyOf(c)) {
 			if (entitytrackerentry.b() == entityplayer) {
 				entitytrackerentry.scanPlayers(this.world.players);
 			} else {
@@ -237,11 +238,11 @@ public class EntityTracker {
 		// }
 	}
 
-	public synchronized void a(EntityPlayer entityplayer, Chunk chunk) {
+	public /* synchronized */ void a(EntityPlayer entityplayer, Chunk chunk) {
 		ArrayList<Entity> arraylist = Lists.newArrayList();
 		ArrayList<Entity> arraylist2 = Lists.newArrayList();
 		// synchronized (c) {
-		for (EntityTrackerEntry entitytrackerentry : this.c) {
+		for (EntityTrackerEntry entitytrackerentry : ImmutableSet.copyOf(c)) {
 			Entity entity = entitytrackerentry.b();
 			if (entity != entityplayer && entity.ab == chunk.locX && entity.ad == chunk.locZ) {
 				entitytrackerentry.updatePlayer(entityplayer);

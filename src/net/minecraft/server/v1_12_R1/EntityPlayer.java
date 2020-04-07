@@ -1223,7 +1223,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
 		} else {
 			super.G();
 		}
-		new Thread(() -> x().getTracker().a(this), "G tracker").start();
+		x().getTracker().a(this);
 	}
 
 	public Entity getSpecatorTarget() {
@@ -1234,7 +1234,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
 		Entity entity2 = this.getSpecatorTarget();
 		this.co = (Entity) ((entity == null) ? this : entity);
 		if (entity2 != this.co) {
-			this.playerConnection.sendPacket((Packet) new PacketPlayOutCamera(this.co));
+			this.playerConnection.sendPacket(new PacketPlayOutCamera(this.co));
 			this.playerConnection.a(this.co.locX, this.co.locY, this.co.locZ, this.yaw, this.pitch,
 					PlayerTeleportEvent.TeleportCause.SPECTATE);
 		}
