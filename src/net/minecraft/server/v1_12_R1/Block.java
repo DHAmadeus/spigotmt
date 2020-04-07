@@ -340,7 +340,7 @@ public class Block {
 	}
 
 	public void onPlace(final World world, final BlockPosition blockposition, final IBlockData iblockdata) {
-		AsyncCatcher.catchOp("block onPlace");
+//		AsyncCatcher.catchOp("block onPlace");
 	}
 
 	public void remove(final World world, final BlockPosition blockposition, final IBlockData iblockdata) {

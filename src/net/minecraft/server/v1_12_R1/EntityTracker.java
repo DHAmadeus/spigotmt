@@ -5,7 +5,6 @@
 package net.minecraft.server.v1_12_R1;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -16,6 +15,8 @@ import org.spigotmc.TrackingRange;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+
+import io.netty.util.internal.ConcurrentSet;
 
 public class EntityTracker {
 
@@ -33,7 +34,7 @@ public class EntityTracker {
 
 	public EntityTracker(WorldServer worldserver) {
 		// ~
-		this.c = new HashSet<EntityTrackerEntry>(); // Collections.synchronizedSet(Sets.newHashSet());
+		this.c = new ConcurrentSet<EntityTrackerEntry>(); // Collections.synchronizedSet(Sets.newHashSet());
 		this.trackedEntities = new IntHashMap<EntityTrackerEntry>();
 		this.world = worldserver;
 		this.e = PlayerChunkMap.getFurthestViewableBlock(worldserver.spigotConfig.viewDistance);
@@ -193,7 +194,7 @@ public class EntityTracker {
 
 	public /* synchronized */ void lonmemay() {
 		List<EntityPlayer> cac = new ArrayList<EntityPlayer>();
-		ImmutableSet.copyOf(c).forEach(entitytrackerentry -> {
+		c.forEach(entitytrackerentry -> {
 			entitytrackerentry.track(world.players);
 			if (entitytrackerentry.b) {
 				Entity entity = entitytrackerentry.b();
@@ -206,7 +207,7 @@ public class EntityTracker {
 
 	public /* synchronized */ void a(EntityPlayer entityplayer) {
 		// synchronized (c) {
-		for (EntityTrackerEntry entitytrackerentry : ImmutableSet.copyOf(c)) {
+		for (EntityTrackerEntry entitytrackerentry : c) {
 			if (entitytrackerentry.b() == entityplayer) {
 				entitytrackerentry.scanPlayers(this.world.players);
 			} else {
@@ -242,7 +243,7 @@ public class EntityTracker {
 		ArrayList<Entity> arraylist = Lists.newArrayList();
 		ArrayList<Entity> arraylist2 = Lists.newArrayList();
 		// synchronized (c) {
-		for (EntityTrackerEntry entitytrackerentry : ImmutableSet.copyOf(c)) {
+		for (EntityTrackerEntry entitytrackerentry : c) {
 			Entity entity = entitytrackerentry.b();
 			if (entity != entityplayer && entity.ab == chunk.locX && entity.ad == chunk.locZ) {
 				entitytrackerentry.updatePlayer(entityplayer);

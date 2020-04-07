@@ -13,6 +13,8 @@ import org.bukkit.event.Event;
 import org.bukkit.event.player.PlayerVelocityEvent;
 import org.bukkit.util.Vector;
 
+import com.google.common.collect.ImmutableSet;
+
 public class EntityTrackerEntry {
 
 	// ~
@@ -419,10 +421,10 @@ public class EntityTrackerEntry {
 	}
 
 	private static boolean isTrackedBy(Entity entity, EntityPlayer entityplayer) {
-		synchronized (entity.tracker) {
-			return entity == entityplayer
-					|| (entity.tracker != null && entity.tracker.trackedPlayers.contains(entityplayer));
-		}
+//		synchronized (entity.tracker) {
+		return entity == entityplayer || (entity.tracker != null
+				&& ImmutableSet.copyOf(entity.tracker.trackedPlayers).contains(entityplayer));
+//		}
 	}
 
 	private void updatePassengers(EntityPlayer player) {

@@ -403,7 +403,7 @@ public class PlayerChunkMap {
 	}
 
 	public void a(final PlayerChunk playerchunk) {
-		AsyncCatcher.catchOp("Async Player Chunk Add");
+//		AsyncCatcher.catchOp("Async Player Chunk Add");
 		this.f.add(playerchunk);
 	}
 
