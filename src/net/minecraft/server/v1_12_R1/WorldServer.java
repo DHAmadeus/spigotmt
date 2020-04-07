@@ -513,6 +513,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 						for (ChunkSection chunksection : chunk.getSections()) {
 							if (chunksection != Chunk.a && chunksection.shouldTick()) {
 								for (int k2 = 0; k2 < i; ++k2) {
+									long time = System.currentTimeMillis();
 									this.l = this.l * 3 + 1013904223;
 									int l2 = this.l >> 2;
 									int i3 = l2 & 0xF;
@@ -527,6 +528,13 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 												iblockdata, this.random);
 									}
 									this.methodProfiler.b();
+									long took = System.currentTimeMillis() - time;
+									if (took > 10) {
+										System.out.println("BLOCKTICK - Block " + (i3 + j) + ", "
+												+ (k3 + chunksection.getYPosition()) + ", " + (j3 + k) + " in world "
+												+ chunk.getWorld().worldData.getName() + " took " + took
+												+ "ms to tick.");
+									}
 								}
 							}
 						}

@@ -106,7 +106,7 @@ public abstract class World implements IBlockAccess {
 	public ChunkGenerator generator;
 	public boolean captureBlockStates;
 	public boolean captureTreeGeneration;
-	public ArrayList<BlockState> capturedBlockStates;
+	public List<BlockState> capturedBlockStates;
 	public List<EntityItem> captureDrops;
 	public long ticksPerAnimalSpawns;
 	public long ticksPerMonsterSpawns;
@@ -187,7 +187,7 @@ public abstract class World implements IBlockAccess {
 		this.keepSpawnInMemory = true;
 		this.captureBlockStates = false;
 		this.captureTreeGeneration = false;
-		this.capturedBlockStates = new ArrayList<BlockState>() {
+		this.capturedBlockStates = Collections.synchronizedList(new ArrayList<BlockState>() {
 			@Override
 			public boolean add(BlockState blockState) {
 				for (BlockState blockState2 : this) {
@@ -197,7 +197,7 @@ public abstract class World implements IBlockAccess {
 				}
 				return super.add(blockState);
 			}
-		};
+		});
 		this.explosionDensityCache = new HashMap<Explosion.CacheKey, Float>();
 		this.capturedTileEntities = Maps.newHashMap();
 		this.spigotConfig = new SpigotWorldConfig(worlddata.getName());
@@ -406,14 +406,16 @@ public abstract class World implements IBlockAccess {
 	public boolean setTypeAndData(BlockPosition blockposition, IBlockData iblockdata, int i) {
 		if (this.captureTreeGeneration) {
 			BlockState blockstate = null;
-			Iterator<BlockState> it = this.capturedBlockStates.iterator();
-			while (it.hasNext()) {
-				BlockState previous = it.next();
-				if (previous.getX() == blockposition.getX() && previous.getY() == blockposition.getY()
-						&& previous.getZ() == blockposition.getZ()) {
-					blockstate = previous;
-					it.remove();
-					break;
+			synchronized (capturedBlockStates) {
+				Iterator<BlockState> it = this.capturedBlockStates.iterator();
+				while (it.hasNext()) {
+					BlockState previous = it.next();
+					if (previous.getX() == blockposition.getX() && previous.getY() == blockposition.getY()
+							&& previous.getZ() == blockposition.getZ()) {
+						blockstate = previous;
+						it.remove();
+						break;
+					}
 				}
 			}
 			if (blockstate == null) {
@@ -844,12 +846,14 @@ public abstract class World implements IBlockAccess {
 	}
 
 	private IBlockData getCapturedBlockType(int x, int y, int z) {
-		for (BlockState previous : this.capturedBlockStates) {
-			if (previous.getX() == x && previous.getY() == y && previous.getZ() == z) {
-				return CraftMagicNumbers.getBlock(previous.getTypeId()).fromLegacyData((int) previous.getRawData());
+		synchronized (capturedBlockStates) {
+			for (BlockState previous : this.capturedBlockStates) {
+				if (previous.getX() == x && previous.getY() == y && previous.getZ() == z) {
+					return CraftMagicNumbers.getBlock(previous.getTypeId()).fromLegacyData((int) previous.getRawData());
+				}
 			}
+			return null;
 		}
-		return null;
 	}
 
 	public boolean D() {
