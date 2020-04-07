@@ -7,13 +7,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.player.PlayerVelocityEvent;
 import org.bukkit.util.Vector;
-
-import com.google.common.collect.ImmutableSet;
 
 public class EntityTrackerEntry {
 
@@ -55,7 +54,7 @@ public class EntityTrackerEntry {
 	public EntityTrackerEntry(Entity entity, int i, int j, int k, boolean flag) {
 		this.w = Collections.emptyList();
 		// ~
-		this.trackedPlayerMap = new HashMap<EntityPlayer, Boolean>();
+		this.trackedPlayerMap = new ConcurrentHashMap<EntityPlayer, Boolean>();
 		this.trackedPlayers = this.trackedPlayerMap.keySet();
 		entity.tracker = this;
 		this.tracker = entity;
@@ -422,8 +421,8 @@ public class EntityTrackerEntry {
 
 	private static boolean isTrackedBy(Entity entity, EntityPlayer entityplayer) {
 //		synchronized (entity.tracker) {
-		return entity == entityplayer || (entity.tracker != null
-				&& ImmutableSet.copyOf(entity.tracker.trackedPlayers).contains(entityplayer));
+		return entity == entityplayer
+				|| (entity.tracker != null && entity.tracker.trackedPlayers.contains(entityplayer));
 //		}
 	}
 
