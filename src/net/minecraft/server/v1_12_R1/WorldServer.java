@@ -4,47 +4,51 @@
 
 package net.minecraft.server.v1_12_R1;
 
-import com.google.common.util.concurrent.ListenableFuture;
-import org.bukkit.entity.Player;
-import org.bukkit.WeatherType;
-import org.bukkit.event.weather.LightningStrikeEvent;
-import org.bukkit.entity.LightningStrike;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
 import org.apache.logging.log4j.LogManager;
-import com.destroystokyo.paper.PaperWorldConfig;
-import org.bukkit.event.Event;
-import org.bukkit.event.world.WorldSaveEvent;
+import org.apache.logging.log4j.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import java.util.Random;
+import org.bukkit.Material;
+import org.bukkit.WeatherType;
+import org.bukkit.craftbukkit.v1_12_R1.CraftTravelAgent;
+import org.bukkit.craftbukkit.v1_12_R1.event.CraftEventFactory;
+import org.bukkit.craftbukkit.v1_12_R1.generator.CustomChunkGenerator;
 import org.bukkit.craftbukkit.v1_12_R1.generator.InternalChunkGenerator;
-import co.aikar.timings.TimedChunkGenerator;
+import org.bukkit.craftbukkit.v1_12_R1.generator.NetherChunkGenerator;
 import org.bukkit.craftbukkit.v1_12_R1.generator.NormalChunkGenerator;
 import org.bukkit.craftbukkit.v1_12_R1.generator.SkyLandsChunkGenerator;
-import org.bukkit.craftbukkit.v1_12_R1.generator.NetherChunkGenerator;
-import org.bukkit.craftbukkit.v1_12_R1.generator.CustomChunkGenerator;
-import java.util.ArrayList;
-import co.aikar.timings.Timing;
-import org.bukkit.craftbukkit.v1_12_R1.event.CraftEventFactory;
+import org.bukkit.craftbukkit.v1_12_R1.util.HashTreeSet;
+import org.bukkit.entity.LightningStrike;
+import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.entity.CreatureSpawnEvent;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.function.Predicate;
-import java.util.Iterator;
-import javax.annotation.Nullable;
-import org.bukkit.Material;
-import java.util.logging.Level;
-import java.util.Collection;
-import java.io.File;
-import org.bukkit.craftbukkit.v1_12_R1.CraftTravelAgent;
+import org.bukkit.event.weather.LightningStrikeEvent;
+import org.bukkit.event.world.WorldSaveEvent;
+import org.bukkit.generator.ChunkGenerator;
+
+import com.destroystokyo.paper.PaperWorldConfig;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.bukkit.generator.ChunkGenerator;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-import java.util.Map;
-import org.bukkit.craftbukkit.v1_12_R1.util.HashTreeSet;
-import org.apache.logging.log4j.Logger;
+import com.google.common.util.concurrent.ListenableFuture;
+
+import co.aikar.timings.TimedChunkGenerator;
+import co.aikar.timings.Timing;
 
 public class WorldServer extends World implements IAsyncTaskHandler {
 	private static Logger a;
@@ -430,12 +434,16 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 		this.methodProfiler.b();
 	}
 
-	private Object jLocker = new Object();
+	private Lock jLocker = new ReentrantLock();
 
 	protected void j() {
 		new Thread(() -> {
-			synchronized (jLocker) {
-				jMT();
+			if (jLocker.tryLock()) {
+				try {
+					jMT();
+				} finally {
+					jLocker.unlock();
+				}
 			}
 		}, "chunk ticks").start();
 	}
