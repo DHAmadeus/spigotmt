@@ -1462,9 +1462,9 @@ public abstract class World implements IBlockAccess {
 							this.methodProfiler.a("tick");
 							if (!entity.dead && !(entity instanceof EntityPlayer)) {
 								try {
-									entity.tickTimer.startTiming();
+//									entity.tickTimer.startTiming();
 									this.h(entity);
-									entity.tickTimer.stopTiming();
+//									entity.tickTimer.stopTiming();
 								} catch (Throwable throwable2) {
 									entity.tickTimer.stopTiming();
 									String msg = "Entity threw exception at " + entity.world.getWorld().getName() + ":"
