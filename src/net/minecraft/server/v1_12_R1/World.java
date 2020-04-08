@@ -1,57 +1,63 @@
 package net.minecraft.server.v1_12_R1;
 
-import java.util.UUID;
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Function;
-import org.bukkit.event.block.BlockCanBuildEvent;
-import com.google.common.base.Predicate;
-import org.bukkit.entity.Player;
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import com.destroystokyo.paper.exception.ServerException;
-import com.destroystokyo.paper.event.server.ServerExceptionEvent;
-import com.destroystokyo.paper.exception.ServerInternalException;
-import co.aikar.timings.TimingHistory;
-import org.spigotmc.ActivationRange;
-import java.util.Collection;
-import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
-import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent;
-import org.bukkit.event.Cancellable;
-import com.destroystokyo.paper.event.entity.ExperienceOrbMergeEvent;
-import org.bukkit.entity.ExperienceOrb;
-import org.bukkit.entity.Vehicle;
-import org.bukkit.entity.Projectile;
-import org.bukkit.craftbukkit.v1_12_R1.event.CraftEventFactory;
-import org.spigotmc.AsyncCatcher;
-import org.bukkit.event.entity.CreatureSpawnEvent;
-import org.bukkit.event.Event;
-import org.bukkit.event.block.BlockPhysicsEvent;
-import org.bukkit.craftbukkit.v1_12_R1.util.CraftMagicNumbers;
-import org.bukkit.craftbukkit.v1_12_R1.block.CraftBlockState;
-import javax.annotation.Nullable;
-import com.destroystokyo.paper.antixray.ChunkPacketBlockControllerAntiXray;
-import com.google.common.collect.Maps;
-import java.util.HashMap;
-import java.util.Iterator;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import java.util.ConcurrentModificationException;
-import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.v1_12_R1.CraftServer;
-import java.util.Map;
-import org.spigotmc.TickLimiter;
-import co.aikar.timings.WorldTimingsHandler;
-import com.destroystokyo.paper.antixray.ChunkPacketBlockController;
-import com.destroystokyo.paper.PaperWorldConfig;
-import org.spigotmc.SpigotWorldConfig;
-import org.bukkit.block.BlockState;
 import java.util.ArrayList;
-import org.bukkit.generator.ChunkGenerator;
-import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.ConcurrentModificationException;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import javax.annotation.Nullable;
+
+import org.bukkit.Bukkit;
+import org.bukkit.block.BlockState;
+import org.bukkit.craftbukkit.v1_12_R1.CraftServer;
+import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_12_R1.block.CraftBlockState;
+import org.bukkit.craftbukkit.v1_12_R1.event.CraftEventFactory;
+import org.bukkit.craftbukkit.v1_12_R1.util.CraftMagicNumbers;
+import org.bukkit.entity.ExperienceOrb;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
+import org.bukkit.entity.Vehicle;
+import org.bukkit.event.Cancellable;
+import org.bukkit.event.Event;
+import org.bukkit.event.block.BlockCanBuildEvent;
+import org.bukkit.event.block.BlockPhysicsEvent;
+import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.generator.ChunkGenerator;
+import org.spigotmc.ActivationRange;
+import org.spigotmc.AsyncCatcher;
+import org.spigotmc.SpigotWorldConfig;
+import org.spigotmc.TickLimiter;
+
+import com.destroystokyo.paper.PaperWorldConfig;
+import com.destroystokyo.paper.antixray.ChunkPacketBlockController;
+import com.destroystokyo.paper.antixray.ChunkPacketBlockControllerAntiXray;
+import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent;
+import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
+import com.destroystokyo.paper.event.entity.ExperienceOrbMergeEvent;
+import com.destroystokyo.paper.event.server.ServerExceptionEvent;
+import com.destroystokyo.paper.exception.ServerException;
+import com.destroystokyo.paper.exception.ServerInternalException;
+import com.google.common.base.Function;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+
+import co.aikar.timings.TimingHistory;
+import co.aikar.timings.WorldTimingsHandler;
 
 public abstract class World implements IBlockAccess {
 
@@ -188,11 +194,18 @@ public abstract class World implements IBlockAccess {
 		this.captureBlockStates = false;
 		this.captureTreeGeneration = false;
 		this.capturedBlockStates = Collections.synchronizedList(new ArrayList<BlockState>() {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
 			@Override
 			public boolean add(BlockState blockState) {
-				for (BlockState blockState2 : this) {
-					if (blockState2.getLocation().equals((Object) blockState.getLocation())) {
-						return false;
+				synchronized (this) {
+					for (BlockState blockState2 : this) {
+						if (blockState2.getLocation().equals(blockState.getLocation())) {
+							return false;
+						}
 					}
 				}
 				return super.add(blockState);
@@ -1383,6 +1396,8 @@ public abstract class World implements IBlockAccess {
 	public void b(BlockPosition blockposition, Block block, int i, int j) {
 	}
 
+	Lock entityLocker = new ReentrantLock();
+
 	public void tickEntities() {
 		this.methodProfiler.a("entities");
 		this.methodProfiler.a("global");
@@ -1425,58 +1440,66 @@ public abstract class World implements IBlockAccess {
 		this.timings.entityRemoval.stopTiming();
 		this.methodProfiler.c("regular");
 		ActivationRange.activateEntities(this);
-		this.timings.entityTick.startTiming();
-		this.guardEntityList = true;
-		TimingHistory.entityTicks += this.entityList.size();
-		int entitiesThisCycle = 0;
-		this.tickPosition = 0;
-		while (this.tickPosition < this.entityList.size()) {
-			this.tickPosition = ((this.tickPosition < this.entityList.size()) ? this.tickPosition : 0);
-			Entity entity = this.entityList.get(this.tickPosition);
-			Entity entity2 = entity.bJ();
-			Label_0733: {
-				if (entity2 != null) {
-					if (!entity2.dead && entity2.w(entity)) {
-						break Label_0733;
-					}
-					entity.stopRiding();
-				}
-				this.methodProfiler.a("tick");
-				if (!entity.dead && !(entity instanceof EntityPlayer)) {
-					try {
-						entity.tickTimer.startTiming();
-						this.h(entity);
-						entity.tickTimer.stopTiming();
-					} catch (Throwable throwable2) {
-						entity.tickTimer.stopTiming();
-						String msg = "Entity threw exception at " + entity.world.getWorld().getName() + ":"
-								+ entity.locX + "," + entity.locY + "," + entity.locZ;
-						System.err.println(msg);
-						throwable2.printStackTrace();
-						this.getServer().getPluginManager().callEvent((Event) new ServerExceptionEvent(
-								(ServerException) new ServerInternalException(msg, throwable2)));
-						entity.dead = true;
-						break Label_0733;
-					}
-				}
-				this.methodProfiler.b();
-				this.methodProfiler.a("remove");
-				if (entity.dead) {
-					Chunk chunk2 = entity.isAddedToChunk() ? entity.getCurrentChunk() : null;
-					if (chunk2 != null) {
-						chunk2.removeEntity(entity);
+//		this.timings.entityTick.startTiming();
+		new Thread(() -> {
+			if (entityLocker.tryLock()) {
+				try {
+					this.guardEntityList = true;
+					TimingHistory.entityTicks += this.entityList.size();
+					int entitiesThisCycle = 0;
+					this.tickPosition = 0;
+					while (this.tickPosition < this.entityList.size()) {
+						this.tickPosition = ((this.tickPosition < this.entityList.size()) ? this.tickPosition : 0);
+						Entity entity = this.entityList.get(this.tickPosition);
+						Entity entity2 = entity.bJ();
+						Label_0733: {
+							if (entity2 != null) {
+								if (!entity2.dead && entity2.w(entity)) {
+									break Label_0733;
+								}
+								entity.stopRiding();
+							}
+							this.methodProfiler.a("tick");
+							if (!entity.dead && !(entity instanceof EntityPlayer)) {
+								try {
+									entity.tickTimer.startTiming();
+									this.h(entity);
+									entity.tickTimer.stopTiming();
+								} catch (Throwable throwable2) {
+									entity.tickTimer.stopTiming();
+									String msg = "Entity threw exception at " + entity.world.getWorld().getName() + ":"
+											+ entity.locX + "," + entity.locY + "," + entity.locZ;
+									System.err.println(msg);
+									throwable2.printStackTrace();
+									this.getServer().getPluginManager().callEvent((Event) new ServerExceptionEvent(
+											(ServerException) new ServerInternalException(msg, throwable2)));
+									entity.dead = true;
+									break Label_0733;
+								}
+							}
+							this.methodProfiler.b();
+							this.methodProfiler.a("remove");
+							if (entity.dead) {
+								Chunk chunk2 = entity.isAddedToChunk() ? entity.getCurrentChunk() : null;
+								if (chunk2 != null) {
+									chunk2.removeEntity(entity);
+								}
+								this.guardEntityList = false;
+								this.entityList.remove(this.tickPosition--);
+								this.guardEntityList = true;
+								this.c(entity);
+							}
+							this.methodProfiler.b();
+						}
+						++this.tickPosition;
 					}
 					this.guardEntityList = false;
-					this.entityList.remove(this.tickPosition--);
-					this.guardEntityList = true;
-					this.c(entity);
+				} finally {
+					entityLocker.unlock();
 				}
-				this.methodProfiler.b();
 			}
-			++this.tickPosition;
-		}
-		this.guardEntityList = false;
-		this.timings.entityTick.stopTiming();
+		}, "Entity tick").start();
+//		this.timings.entityTick.stopTiming();
 		this.methodProfiler.c("blockEntities");
 		this.timings.tileEntityTick.startTiming();
 		if (!this.tileEntityListUnload.isEmpty()) {

@@ -531,8 +531,9 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 									long took = System.currentTimeMillis() - time;
 									if (took > 10) {
 										System.out.println("BLOCKTICK - Block " + (i3 + j) + ", "
-												+ (k3 + chunksection.getYPosition()) + ", " + (j3 + k) + " in world "
-												+ worldData.getName() + " took " + took + "ms to tick.");
+												+ (k3 + chunksection.getYPosition()) + ", " + (j3 + k) + " ("
+												+ block.getName() + ") in world " + worldData.getName() + " took "
+												+ took + "ms to tick.");
 									}
 								}
 							}
