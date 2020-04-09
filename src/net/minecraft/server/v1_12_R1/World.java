@@ -1446,7 +1446,7 @@ public abstract class World implements IBlockAccess {
 				try {
 					this.guardEntityList = true;
 					TimingHistory.entityTicks += this.entityList.size();
-					int entitiesThisCycle = 0;
+//					int entitiesThisCycle = 0;
 					this.tickPosition = 0;
 					while (this.tickPosition < this.entityList.size()) {
 						this.tickPosition = ((this.tickPosition < this.entityList.size()) ? this.tickPosition : 0);
@@ -1466,7 +1466,7 @@ public abstract class World implements IBlockAccess {
 									this.h(entity);
 //									entity.tickTimer.stopTiming();
 								} catch (Throwable throwable2) {
-									entity.tickTimer.stopTiming();
+//									entity.tickTimer.stopTiming();
 									String msg = "Entity threw exception at " + entity.world.getWorld().getName() + ":"
 											+ entity.locX + "," + entity.locY + "," + entity.locZ;
 									System.err.println(msg);

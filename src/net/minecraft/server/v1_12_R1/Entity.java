@@ -4,56 +4,61 @@
 
 package net.minecraft.server.v1_12_R1;
 
-import org.apache.logging.log4j.LogManager;
-import java.util.HashSet;
+import java.lang.ref.WeakReference;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import org.bukkit.event.entity.EntityPortalEvent;
-import org.bukkit.craftbukkit.v1_12_R1.CraftTravelAgent;
-import org.bukkit.TravelAgent;
-import org.bukkit.plugin.PluginManager;
-import org.bukkit.event.entity.EntityCombustByEntityEvent;
-import org.bukkit.craftbukkit.v1_12_R1.event.CraftEventFactory;
-import org.bukkit.event.hanging.HangingBreakByEntityEvent;
-import org.bukkit.entity.Hanging;
-import org.bukkit.event.entity.EntityAirChangeEvent;
-import com.google.common.collect.Iterables;
-import org.spigotmc.event.entity.EntityDismountEvent;
-import org.bukkit.event.vehicle.VehicleExitEvent;
-import org.spigotmc.event.entity.EntityMountEvent;
-import org.bukkit.event.vehicle.VehicleEnterEvent;
-import org.bukkit.entity.LivingEntity;
-import com.google.common.base.Preconditions;
-import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
-import org.bukkit.Server;
-import org.bukkit.craftbukkit.v1_12_R1.CraftServer;
-import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
-import java.util.Iterator;
-import javax.annotation.Nullable;
-import org.bukkit.event.vehicle.VehicleBlockCollisionEvent;
-import org.bukkit.block.BlockFace;
-import org.bukkit.entity.Vehicle;
-import java.util.Arrays;
-import org.bukkit.event.entity.EntityCombustEvent;
-import org.bukkit.block.Block;
-import org.bukkit.event.Event;
-import org.bukkit.event.entity.EntityCombustByBlockEvent;
-import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
-import com.google.common.collect.Sets;
-import com.google.common.collect.Lists;
-import org.spigotmc.ActivationRange;
-import co.aikar.timings.MinecraftTimings;
-import java.lang.ref.WeakReference;
-import org.bukkit.Location;
-import co.aikar.timings.Timing;
-import org.bukkit.projectiles.ProjectileSource;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
-import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import javax.annotation.Nullable;
+
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Server;
+import org.bukkit.TravelAgent;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.craftbukkit.v1_12_R1.CraftServer;
+import org.bukkit.craftbukkit.v1_12_R1.CraftTravelAgent;
+import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_12_R1.entity.CraftEntity;
-import java.util.Random;
+import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_12_R1.event.CraftEventFactory;
+import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
+import org.bukkit.entity.Hanging;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Vehicle;
+import org.bukkit.event.Event;
+import org.bukkit.event.entity.EntityAirChangeEvent;
+import org.bukkit.event.entity.EntityCombustByBlockEvent;
+import org.bukkit.event.entity.EntityCombustByEntityEvent;
+import org.bukkit.event.entity.EntityCombustEvent;
+import org.bukkit.event.entity.EntityPortalEvent;
+import org.bukkit.event.hanging.HangingBreakByEntityEvent;
+import org.bukkit.event.vehicle.VehicleBlockCollisionEvent;
+import org.bukkit.event.vehicle.VehicleEnterEvent;
+import org.bukkit.event.vehicle.VehicleExitEvent;
+import org.bukkit.plugin.PluginManager;
+import org.bukkit.projectiles.ProjectileSource;
+import org.spigotmc.ActivationRange;
+import org.spigotmc.event.entity.EntityDismountEvent;
+import org.spigotmc.event.entity.EntityMountEvent;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+
+import co.aikar.timings.MinecraftTimings;
+import co.aikar.timings.Timing;
 
 public abstract class Entity implements ICommandListener, KeyedObject {
 	private static final int CURRENT_LEVEL = 2;
@@ -2595,11 +2600,11 @@ public abstract class Entity implements ICommandListener, KeyedObject {
 	public EnumPistonReaction getPushReaction() {
 		return EnumPistonReaction.NORMAL;
 	}
-    
-    public SoundCategory getDeathSoundCategory() {
-        return this.bK();
-    }
-    
+
+	public SoundCategory getDeathSoundCategory() {
+		return this.bK();
+	}
+
 	public SoundCategory bK() {
 		return SoundCategory.NEUTRAL;
 	}
@@ -2612,6 +2617,13 @@ public abstract class Entity implements ICommandListener, KeyedObject {
 	public EntityTrackerEntry getTracker() {
 		return tracker;
 	}
+
+//	// ticklocker
+//	private Lock tickLocker = new ReentrantLock();
+//
+//	public Lock getTickLocker() {
+//		return tickLocker;
+//	}
 
 	static {
 		Entity.SHARED_RANDOM = new Random() {

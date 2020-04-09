@@ -3,6 +3,7 @@ package net.minecraft.server.v1_12_R1;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -261,8 +262,7 @@ public class EntityTrackerEntry {
 	private void d() {
 		DataWatcher datawatcher = this.tracker.getDataWatcher();
 		if (datawatcher.a()) {
-			this.broadcastIncludingSelf(
-					(Packet<?>) new PacketPlayOutEntityMetadata(this.tracker.getId(), datawatcher, false));
+			this.broadcastIncludingSelf(new PacketPlayOutEntityMetadata(this.tracker.getId(), datawatcher, false));
 		}
 		if (this.tracker instanceof EntityLiving) {
 			AttributeMapServer attributemapserver = (AttributeMapServer) ((EntityLiving) this.tracker)
@@ -422,8 +422,12 @@ public class EntityTrackerEntry {
 
 	private static boolean isTrackedBy(Entity entity, EntityPlayer entityplayer) {
 //		synchronized (entity.tracker) {
-		return entity == entityplayer || (entity.tracker != null
-				&& ImmutableSet.copyOf(entity.tracker.trackedPlayers).contains(entityplayer));
+		try {
+			return entity == entityplayer || (entity.tracker != null
+					&& ImmutableSet.copyOf(entity.tracker.trackedPlayers).contains(entityplayer));
+		} catch (ConcurrentModificationException e) {
+			return false;
+		}
 //		}
 	}
 

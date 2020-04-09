@@ -10,10 +10,8 @@ import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.spigotmc.AsyncCatcher;
 import org.spigotmc.TrackingRange;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 import io.netty.util.internal.ConcurrentSet;
@@ -162,7 +160,7 @@ public class EntityTracker {
 	}
 
 	public synchronized void untrackEntity(Entity entity) {
-		AsyncCatcher.catchOp("entity untrack");
+//		AsyncCatcher.catchOp("entity untrack");
 		if (entity instanceof EntityPlayer) {
 			EntityPlayer entityplayer = (EntityPlayer) entity;
 			// synchronized (c) {
